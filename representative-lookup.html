@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Find Your Representatives</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;600&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --navy: #0d1b2a;
+      --blue: #1a3a5c;
+      --gold: #c8a84b;
+      --gold-light: #e8c97a;
+      --cream: #f5f0e8;
+      --white: #ffffff;
+      --red: #c0392b;
+      --gray: #8a8f99;
+      --card-bg: #162032;
+    }
+
+    body {
+      background: var(--navy);
+      color: var(--cream);
+      font-family: 'Source Sans 3', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 60px;
+      background-image:
+        radial-gradient(ellipse at 20% 0%, rgba(26, 58, 92, 0.5) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 100%, rgba(200, 168, 75, 0.08) 0%, transparent 50%);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .flag-stripe {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    .stripe {
+      height: 5px;
+      border-radius: 3px;
+    }
+
+    .s1 { width: 36px; background: var(--red); }
+    .s2 { width: 60px; background: var(--white); }
+    .s3 { width: 36px; background: var(--blue); }
+    .s4 { width: 60px; background: var(--white); }
+    .s5 { width: 36px; background: var(--red); }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    h1 span { color: var(--gold); }
+
+    .subtitle {
+      font-size: 0.95rem;
+      font-weight: 300;
+      color: var(--gray);
+      margin-top: 8px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .search-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(200, 168, 75, 0.2);
+      border-radius: 16px;
+      padding: 36px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .input-row { display: flex; gap: 10px; }
+
+    input[type="text"] {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1.5px solid rgba(200, 168, 75, 0.25);
+      border-radius: 10px;
+      color: var(--white);
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      padding: 14px 18px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    input::placeholder { color: rgba(255, 255, 255, 0.25); letter-spacing: 0.1em; }
+    input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(200, 168, 75, 0.15); }
+
+    button.search-btn {
+      background: var(--gold);
+      border: none;
+      border-radius: 10px;
+      color: var(--navy);
+      cursor: pointer;
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 14px 22px;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    button.search-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
+    button.search-btn:active { transform: translateY(0); }
+
+    .hint { font-size: 0.78rem; color: var(--gray); margin-top: 10px; }
+
+    #results { width: 100%; max-width: 520px; margin-top: 24px; }
+
+    .error-box {
+      background: rgba(192, 57, 43, 0.15);
+      border: 1px solid rgba(192, 57, 43, 0.4);
+      border-radius: 12px;
+      padding: 18px 22px;
+      color: #e88;
+      font-size: 0.9rem;
+      line-height: 1.8;
+    }
+
+    .error-box a { color: var(--gold-light); }
+
+    .location-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 16px;
+      padding-left: 2px;
+    }
+
+    .location-label span { color: var(--gold-light); }
+
+    .section-header {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.04em;
+      margin: 24px 0 12px 2px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(200, 168, 75, 0.15);
+    }
+
+    .rep-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(200, 168, 75, 0.18);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      transition: border-color 0.2s;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .rep-card:hover { border-color: rgba(200, 168, 75, 0.45); }
+
+    .rep-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .rep-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--navy));
+      border: 2px solid rgba(200, 168, 75, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--gold);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .rep-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+    .rep-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.2;
+    }
+
+    .rep-meta { font-size: 0.82rem; color: var(--gray); margin-top: 3px; }
+
+    .party-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-top: 5px;
+    }
+
+    .party-D { background: rgba(30, 90, 180, 0.25); color: #7aabf0; border: 1px solid rgba(30, 90, 180, 0.4); }
+    .party-R { background: rgba(180, 30, 30, 0.25); color: #f07a7a; border: 1px solid rgba(180, 30, 30, 0.4); }
+    .party-I { background: rgba(120, 80, 180, 0.25); color: #c0a0f0; border: 1px solid rgba(120, 80, 180, 0.4); }
+
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .contact-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9px;
+      color: var(--cream);
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 10px 14px;
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .contact-btn:hover { background: rgba(200, 168, 75, 0.12); border-color: rgba(200, 168, 75, 0.35); color: var(--gold-light); }
+    .contact-btn svg { flex-shrink: 0; }
+    .contact-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .contact-btn.full { grid-column: 1 / -1; }
+
+    .house-link {
+      background: rgba(200, 168, 75, 0.08);
+      border: 1px solid rgba(200, 168, 75, 0.2);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 14px;
+      text-align: center;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .house-link p { font-size: 0.82rem; color: var(--gray); margin-bottom: 8px; }
+
+    .house-link a {
+      color: var(--gold-light);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .house-link a:hover { border-color: var(--gold-light); }
+
+    .note-box {
+      font-size: 0.8rem;
+      color: var(--gray);
+      margin-bottom: 14px;
+      padding: 14px 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      line-height: 1.6;
+    }
+
+    .note-box a { color: var(--gold-light); }
+
+    .loading { text-align: center; padding: 30px; color: var(--gray); font-size: 0.9rem; }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid rgba(200, 168, 75, 0.2);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    .disclaimer {
+      font-size: 0.72rem;
+      color: var(--gray);
+      text-align: center;
+      margin-top: 32px;
+      max-width: 420px;
+      line-height: 1.6;
+      opacity: 0.7;
+    }
+
+    .disclaimer a { color: var(--gold-light); }
+
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="flag-stripe">
+      <div class="stripe s1"></div>
+      <div class="stripe s2"></div>
+      <div class="stripe s3"></div>
+      <div class="stripe s4"></div>
+      <div class="stripe s5"></div>
+    </div>
+    <h1>Find Your <span>Representatives</span></h1>
+    <p class="subtitle">Enter your ZIP code to connect with your elected officials</p>
+  </header>
+
+  <div class="search-card">
+    <label for="zip">Your ZIP Code</label>
+    <div class="input-row">
+      <input type="text" id="zip" placeholder="e.g. 07302" maxlength="5" inputmode="numeric" pattern="[0-9]*">
+      <button class="search-btn" onclick="lookup()">Search</button>
+    </div>
+    <p class="hint">Shows your U.S. Senators, U.S. House Representative, and state legislators.</p>
+  </div>
+
+  <div id="results"></div>
+
+  <p class="disclaimer">
+    Federal data from the <a href="https://github.com/unitedstates/congress-legislators"
+      target="_blank">unitedstates project</a>.
+    State data from <a href="https://openstates.org" target="_blank">Open States</a>.
+    Geocoding by OpenStreetMap &amp; U.S. Census Bureau.
+    Contact info may lag behind recent elections or appointments.
+  </p>
+
+  <script>
+    // ============================================================
+    // CONFIGURATION
+    // ============================================================
+    // Open States API key (free) — for state legislators.
+    // Get one at: https://openstates.org/accounts/register/
+    // Federal representatives (Senators + House) work without any key.
+    var OPENSTATES_KEY = '6c1c1217-84d8-4de4-8207-dffce0adeed0';
+
+    // State name → abbreviation
+    var STATES = {
+      'Alabama':'AL','Alaska':'AK','Arizona':'AZ','Arkansas':'AR','California':'CA',
+      'Colorado':'CO','Connecticut':'CT','Delaware':'DE','Florida':'FL','Georgia':'GA',
+      'Hawaii':'HI','Idaho':'ID','Illinois':'IL','Indiana':'IN','Iowa':'IA',
+      'Kansas':'KS','Kentucky':'KY','Louisiana':'LA','Maine':'ME','Maryland':'MD',
+      'Massachusetts':'MA','Michigan':'MI','Minnesota':'MN','Mississippi':'MS','Missouri':'MO',
+      'Montana':'MT','Nebraska':'NE','Nevada':'NV','New Hampshire':'NH','New Jersey':'NJ',
+      'New Mexico':'NM','New York':'NY','North Carolina':'NC','North Dakota':'ND','Ohio':'OH',
+      'Oklahoma':'OK','Oregon':'OR','Pennsylvania':'PA','Rhode Island':'RI','South Carolina':'SC',
+      'South Dakota':'SD','Tennessee':'TN','Texas':'TX','Utah':'UT','Vermont':'VT',
+      'Virginia':'VA','Washington':'WA','West Virginia':'WV','Wisconsin':'WI','Wyoming':'WY',
+      'District of Columbia':'DC'
+    };
+
+    // At-large states (single House rep, no district needed)
+    var AT_LARGE = ['AK','DE','MT','ND','SD','VT','WY'];
+
+    // Congress data cache
+    var congressCache = null;
+
+    // ── Main lookup ────────────────────────────────────────────
+    async function lookup() {
+      var zip = document.getElementById('zip').value.trim();
+      var out = document.getElementById('results');
+
+      if (!/^\d{5}$/.test(zip)) {
+        out.innerHTML = errBox('Please enter a valid 5-digit ZIP code.');
+        return;
+      }
+
+      out.innerHTML = '<div class="loading"><div class="spinner"></div>Looking up your representatives&hellip;</div>';
+
+      try {
+        // Step 1: Geocode ZIP → lat/lng + state
+        var geoRes = await fetch(
+          'https://nominatim.openstreetmap.org/search?postalcode=' + zip +
+          '&country=US&format=json&limit=1&addressdetails=1'
+        );
+        var geoData = await geoRes.json();
+
+        if (!geoData.length) {
+          out.innerHTML = errBox('ZIP code <strong>' + escHtml(zip) + '</strong> was not found.');
+          return;
+        }
+
+        var lat = geoData[0].lat;
+        var lng = geoData[0].lon;
+        var address = geoData[0].address || {};
+        var stateName = address.state || '';
+        var stateAbbr = STATES[stateName] || '';
+        var city = address.city || address.town || address.village || address.hamlet || '';
+        var locationLabel = [city, stateName].filter(Boolean).join(', ') || zip;
+
+        // Step 2: Parallel data fetches
+        var fetchList = [
+          fetchCongress(),
+          fetchDistrict(lat, lng)
+        ];
+        if (OPENSTATES_KEY) {
+          fetchList.push(fetchStateLegislators(lat, lng));
+        }
+
+        var results = await Promise.allSettled(fetchList);
+
+        var congressMembers = results[0].status === 'fulfilled' ? results[0].value : [];
+        var districtNum = results[1].status === 'fulfilled' ? results[1].value : null;
+        var stateLegislators = (results[2] && results[2].status === 'fulfilled') ? results[2].value : null;
+        var stateApiError = results[2] && results[2].status === 'rejected';
+
+        // Step 3: Filter federal representatives
+        var usSenators = [];
+        var usHouseReps = [];
+
+        if (stateAbbr && congressMembers.length) {
+          usSenators = congressMembers.filter(function (m) {
+            var term = currentTerm(m);
+            return term && term.type === 'sen' && term.state === stateAbbr;
+          });
+
+          // House rep: use district if known, or at-large
+          if (AT_LARGE.indexOf(stateAbbr) !== -1) {
+            usHouseReps = congressMembers.filter(function (m) {
+              var term = currentTerm(m);
+              return term && term.type === 'rep' && term.state === stateAbbr;
+            });
+          } else if (districtNum !== null) {
+            usHouseReps = congressMembers.filter(function (m) {
+              var term = currentTerm(m);
+              return term && term.type === 'rep' && term.state === stateAbbr &&
+                String(term.district) === String(districtNum);
+            });
+          }
+        }
+
+        // Step 4: Separate state legislators by chamber
+        var stateSenators = [];
+        var stateReps = [];
+        if (stateLegislators && stateLegislators.length) {
+          stateSenators = stateLegislators.filter(function (p) {
+            return p.current_role && p.current_role.org_classification === 'upper';
+          });
+          stateReps = stateLegislators.filter(function (p) {
+            return p.current_role && p.current_role.org_classification === 'lower';
+          });
+        }
+
+        // Step 5: Build output
+        var html = '<p class="location-label">Representatives for <span>' + escHtml(locationLabel) + '</span></p>';
+        var hasAnything = false;
+
+        // ─ Federal ─
+        if (usSenators.length || usHouseReps.length) {
+          html += '<div class="section-header">Federal</div>';
+          for (var i = 0; i < usSenators.length; i++) html += buildCongressCard(usSenators[i]);
+          for (var i = 0; i < usHouseReps.length; i++) html += buildCongressCard(usHouseReps[i]);
+          hasAnything = true;
+        }
+
+        // House rep fallback link if we couldn't determine district
+        if (!usHouseReps.length && AT_LARGE.indexOf(stateAbbr) === -1) {
+          html += '<div class="house-link">' +
+            '<p>U.S. House of Representatives</p>' +
+            '<a href="https://www.house.gov/representatives/find-your-representative" target="_blank" rel="noopener">' +
+            'Find your House Representative &rarr;</a></div>';
+        }
+
+        // ─ State ─
+        if (stateSenators.length) {
+          html += '<div class="section-header">State Senate</div>';
+          for (var i = 0; i < stateSenators.length; i++) html += buildStateCard(stateSenators[i]);
+          hasAnything = true;
+        }
+        if (stateReps.length) {
+          html += '<div class="section-header">State Assembly / House</div>';
+          for (var i = 0; i < stateReps.length; i++) html += buildStateCard(stateReps[i]);
+          hasAnything = true;
+        }
+
+        // ─ Notes ─
+        if (!OPENSTATES_KEY) {
+          html += '<div class="note-box">' +
+            'Want to see your <strong>state legislators</strong> too? ' +
+            'Get a free API key at <a href="https://openstates.org/accounts/register/" target="_blank">openstates.org</a>, ' +
+            'then paste it into this page\'s source code where it says <code>OPENSTATES_KEY</code>.' +
+            '</div>';
+        } else if (stateApiError) {
+          html += '<div class="note-box">' +
+            'State legislator data is temporarily unavailable. ' +
+            'Visit <a href="https://openstates.org/find_your_legislator/" target="_blank">openstates.org</a> to look them up directly.' +
+            '</div>';
+        }
+
+        if (!hasAnything) {
+          html += errBox(
+            'No representatives found for this ZIP code. Try these resources:<br><br>' +
+            '<a href="https://www.senate.gov/senators/senators-contact.htm" target="_blank">U.S. Senate Contact List</a><br>' +
+            '<a href="https://www.house.gov/representatives/find-your-representative" target="_blank">Find Your House Representative</a><br>' +
+            '<a href="https://openstates.org/find_your_legislator/" target="_blank">Find Your State Legislators</a>'
+          );
+        }
+
+        out.innerHTML = html;
+        out.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      } catch (e) {
+        console.error(e);
+        out.innerHTML = errBox(
+          'Something went wrong. Try these resources directly:<br><br>' +
+          '<a href="https://www.senate.gov/senators/senators-contact.htm" target="_blank">U.S. Senate Contact List</a><br>' +
+          '<a href="https://www.house.gov/representatives/find-your-representative" target="_blank">Find Your House Representative</a><br>' +
+          '<a href="https://openstates.org/find_your_legislator/" target="_blank">Find Your State Legislators</a>'
+        );
+      }
+    }
+
+    // ── Data fetchers ──────────────────────────────────────────
+
+    async function fetchCongress() {
+      if (congressCache) return congressCache;
+      var res = await fetch(
+        'https://unitedstates.github.io/congress-legislators/legislators-current.json'
+      );
+      if (!res.ok) throw new Error('Congress data: ' + res.status);
+      congressCache = await res.json();
+      return congressCache;
+    }
+
+    async function fetchDistrict(lat, lng) {
+      // Use Census geocoder to find congressional district from coordinates
+      var res = await fetch(
+        'https://geocoding.geo.census.gov/geocoder/geographies/coordinates' +
+        '?x=' + lng + '&y=' + lat +
+        '&benchmark=Public_AR_Current&vintage=Current_Current&layers=54&format=json'
+      );
+      if (!res.ok) return null;
+      var data = await res.json();
+      var geos = data.result && data.result.geographies;
+      if (!geos) return null;
+      // Look for congressional district in the geographies
+      var cdKey = Object.keys(geos).find(function (k) {
+        return k.toLowerCase().indexOf('congressional') !== -1;
+      });
+      if (cdKey && geos[cdKey] && geos[cdKey][0]) {
+        var districtStr = geos[cdKey][0].BASENAME || geos[cdKey][0].CD || geos[cdKey][0].GEOID || '';
+        // Extract just the district number
+        var match = districtStr.match(/(\d+)/);
+        if (match) return parseInt(match[1], 10);
+      }
+      return null;
+    }
+
+    async function fetchStateLegislators(lat, lng) {
+      var res = await fetch(
+        'https://v3.openstates.org/people.geo?lat=' + lat + '&lng=' + lng,
+        { headers: { 'X-API-KEY': OPENSTATES_KEY } }
+      );
+      if (!res.ok) throw new Error('Open States: ' + res.status);
+      var data = await res.json();
+      return data.results || [];
+    }
+
+    // ── Card builders ──────────────────────────────────────────
+
+    function buildCongressCard(member) {
+      var term = currentTerm(member);
+      var name = member.name.official_full || (member.name.first + ' ' + member.name.last);
+      var initials = getInitials(name);
+      var bioguideId = member.id.bioguide;
+      var photoUrl = 'https://unitedstates.github.io/images/congress/225x275/' + bioguideId + '.jpg';
+
+      var partyCode = getPartyCode(term.party || '');
+      var partyLabel = getPartyLabel(partyCode, term.party);
+
+      var role = 'U.S. Senator';
+      if (term.type === 'rep') {
+        role = term.district
+          ? 'U.S. Representative &middot; District ' + term.district
+          : 'U.S. Representative (At-Large)';
+      } else if (term.state_rank) {
+        role += ' (' + capitalize(term.state_rank) + ')';
+      }
+
+      var btns = '';
+      if (term.url) btns += contactBtn(iGlobe(), 'Website', term.url, false, true);
+      if (term.phone) btns += contactBtn(iPhone(), term.phone, 'tel:' + term.phone.replace(/\D/g, ''), false, false);
+      if (term.contact_form) btns += contactBtn(iEmail(), 'Contact Form', term.contact_form, false, true);
+      if (term.address) btns += contactBtn(iMap(), term.address, 'https://maps.google.com/?q=' + encodeURIComponent(term.address), true, true);
+      if (!btns) btns = noContact();
+
+      return '<div class="rep-card"><div class="rep-top">' +
+        '<div class="rep-avatar"><img src="' + photoUrl + '" alt="' + escHtml(name) +
+        '" onerror="this.parentElement.innerHTML=\'' + initials + '\'"></div>' +
+        '<div><div class="rep-name">' + escHtml(name) + '</div>' +
+        '<div class="rep-meta">' + role + '</div>' +
+        '<div class="party-badge party-' + partyCode + '">' + escHtml(partyLabel) + '</div></div></div>' +
+        '<div class="contact-grid">' + btns + '</div></div>';
+    }
+
+    function buildStateCard(person) {
+      var name = person.name || 'Unknown';
+      var initials = getInitials(name);
+
+      var partyCode = getPartyCode(person.party || '');
+      var partyLabel = getPartyLabel(partyCode, person.party);
+
+      var cr = person.current_role || {};
+      var chamberLabel = cr.org_classification === 'upper' ? 'State Senator' : 'State Representative';
+      var role = cr.district
+        ? (cr.title || chamberLabel) + ' &middot; District ' + cr.district
+        : (cr.title || chamberLabel);
+
+      var avatarContent = person.image
+        ? '<img src="' + person.image + '" alt="' + escHtml(name) +
+          '" onerror="this.parentElement.innerHTML=\'' + initials + '\'">'
+        : initials;
+
+      var btns = '';
+      var links = person.links || [];
+      var offices = person.offices || [];
+      var contacts = person.contact_details || [];
+
+      if (links[0]) btns += contactBtn(iGlobe(), 'Website', links[0].url, false, true);
+
+      // Open States v3: offices array
+      for (var i = 0; i < offices.length; i++) {
+        if (offices[i].voice) { btns += contactBtn(iPhone(), offices[i].voice, 'tel:' + offices[i].voice.replace(/\D/g, ''), false, false); break; }
+      }
+      for (var i = 0; i < offices.length; i++) {
+        if (offices[i].email) { btns += contactBtn(iEmail(), offices[i].email, 'mailto:' + offices[i].email, true, false); break; }
+      }
+      for (var i = 0; i < offices.length; i++) {
+        if (offices[i].address) { btns += contactBtn(iMap(), offices[i].address, 'https://maps.google.com/?q=' + encodeURIComponent(offices[i].address), true, true); break; }
+      }
+
+      // Fallback: older contact_details format
+      for (var i = 0; i < contacts.length; i++) {
+        var c = contacts[i];
+        var v = (c.value || '').trim();
+        if (!v) continue;
+        if (c.type === 'voice' && btns.indexOf('tel:') === -1) btns += contactBtn(iPhone(), v, 'tel:' + v.replace(/\s/g, ''), false, false);
+        if (c.type === 'email' && btns.indexOf('mailto:') === -1) btns += contactBtn(iEmail(), v, 'mailto:' + v, true, false);
+        if (c.type === 'address' && btns.indexOf('maps.google') === -1) btns += contactBtn(iMap(), v, 'https://maps.google.com/?q=' + encodeURIComponent(v), true, true);
+      }
+
+      // Top-level email fallback
+      if (person.email && btns.indexOf('mailto:') === -1) {
+        btns += contactBtn(iEmail(), person.email, 'mailto:' + person.email, true, false);
+      }
+
+      if (!btns) btns = noContact();
+
+      var partyHtml = partyLabel
+        ? '<div class="party-badge party-' + partyCode + '">' + escHtml(partyLabel) + '</div>'
+        : '';
+
+      return '<div class="rep-card"><div class="rep-top">' +
+        '<div class="rep-avatar">' + avatarContent + '</div>' +
+        '<div><div class="rep-name">' + escHtml(name) + '</div>' +
+        '<div class="rep-meta">' + role + '</div>' +
+        partyHtml + '</div></div>' +
+        '<div class="contact-grid">' + btns + '</div></div>';
+    }
+
+    // ── Helpers ────────────────────────────────────────────────
+
+    function currentTerm(member) {
+      var terms = member.terms || [];
+      return terms[terms.length - 1] || {};
+    }
+
+    function getInitials(name) {
+      return name.split(' ').filter(Boolean).map(function (w) { return w[0]; }).slice(0, 2).join('').toUpperCase();
+    }
+
+    function getPartyCode(partyStr) {
+      var lower = partyStr.toLowerCase();
+      if (lower.includes('democrat')) return 'D';
+      if (lower.includes('republican')) return 'R';
+      if (!partyStr || lower === 'nonpartisan' || lower === 'unknown') return 'N';
+      return 'I';
+    }
+
+    function getPartyLabel(code, raw) {
+      if (code === 'D') return 'Democrat';
+      if (code === 'R') return 'Republican';
+      if (code === 'N') return '';
+      return (raw || 'Independent').replace(/ Party$/i, '');
+    }
+
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    function escHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function contactBtn(icon, label, href, full, external) {
+      return '<a class="contact-btn' + (full ? ' full' : '') + '" href="' + href + '"' +
+        (external ? ' target="_blank" rel="noopener"' : '') + '>' +
+        icon + '<span>' + escHtml(label) + '</span></a>';
+    }
+
+    function noContact() {
+      return '<p style="color:var(--gray);font-size:0.82rem;grid-column:1/-1">No contact details on file.</p>';
+    }
+
+    function errBox(msg) {
+      return '<div class="error-box">' + msg + '</div>';
+    }
+
+    // ── Icons (inline SVG) ────────────────────────────────────
+    function iGlobe() { return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'; }
+    function iPhone() { return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.35 2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.08 6.08l1.07-.93a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>'; }
+    function iEmail() { return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>'; }
+    function iMap() { return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'; }
+
+    // ── Event listener ─────────────────────────────────────────
+    document.getElementById('zip').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') lookup();
+    });
+  </script>
+
+</body>
+
+</html>
